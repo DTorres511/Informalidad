@@ -162,3 +162,7 @@ cd $output
 save "basefinal-`year'.dta", replace
 *tablas para cada año
 tabout ocupinf ocupinfp p507 using tabresumen_`year'.xls, h3(nil) 
+*correlación
+replace ocupinf=0 if ocupinf==2
+pwcorr ocupinfp ocupinf
+
