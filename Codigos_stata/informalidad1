@@ -1,15 +1,17 @@
-clear all
 set more off
 
-global data "C:\Projects\Trade_Informal_Employment\Data"
-global output "C:\Projects\Trade_Informal_Employment\Output"
+global data "C:\Users\Lori\Desktop\work_dianatorres\Informalidad"
+global output "C:\Users\Lori\Desktop\work_dianatorres\Informalidad\Output"
 
 cd $data
 
-* Selección del año
-local year 2006
+*Selección del año
+*desde el año 2007 se presenta la variable estructura sobre empleo formal o informal
+*debemos correr todo el comando para que local funcione
+local year 2019
 
 use conglome vivienda hogar codperso ubigeo p204 p205 p206 p207 p208a p209 using "enaho01-`year'-200.dta", clear
+
 rename p207 gender
 rename p208a age
 rename p209 est_civil
@@ -17,13 +19,14 @@ destring conglome, replace
 destring vivienda, replace
 destring hogar, replace
 destring codperso, replace
-save "mod200`year'.dta", replace
+save "mod200-`year'.dta", replace
 
 use conglome vivienda hogar codperso p4191 p4192 p4193 p4194 using "enaho01a-`year'-400.dta", clear
-** Afiliacion seguro medico SEGMED
+* Afiliacion seguro medico SEGMED
 * Se asume que un trabajador que cotiza
 * seguridad social tiene por tanto algun tipo
 * de contrato, recibe vacaciones, etc.
+*si segmed=0 tiene seguro de salud
 gen segmed = 1
 replace segmed = 0 if p4191==1
 replace segmed = 0 if p4192==1
@@ -35,10 +38,10 @@ destring conglome, replace
 destring vivienda, replace
 destring hogar, replace
 destring codperso, replace
-save "mod400`year'.dta", replace
+save "mod400-`year'.dta", replace
 
 use conglome vivienda hogar codperso fac500a i513t i518 i524d1 i530a i538d1 i541a ocu500 p505 p506 p507 p510 p510a p510b ///
-p512a p512b using "enaho01a-`year'-500.dta", clear
+p512a p512b ocupinf using "enaho01a-`year'-500.dta", clear
 rename i524d1 i524e1
 rename i538d1 i538e1
 
@@ -63,12 +66,15 @@ destring conglome, replace
 destring vivienda, replace
 destring hogar, replace
 destring codperso, replace
-save "mod500`year'.dta", replace
+save "mod500-`year'.dta", replace
 
-use "mod200`year'.dta", clear
-merge 1:1 conglome vivienda hogar codperso using "mod400`year'.dta"
+
+
+*Uniendo bases
+use "mod200-`year'.dta", clear
+merge 1:1 conglome vivienda hogar codperso using "mod400-`year'.dta"
 drop _merge
-merge 1:1 conglome vivienda hogar codperso using "mod500`year'.dta"
+merge 1:1 conglome vivienda hogar codperso using "mod500-`year'.dta"
 keep if _merge==3
 drop _merge
 
@@ -145,11 +151,14 @@ label variable emp_siu "Empleo Formal e Informal"
 drop p204 p205 p206 p510 p510a p510b p512a p512b
 
 * Indicador de Informalidad:
-gen ocupinf =  .
-replace ocupinf = (emp_siu==1 | emp_siu==3 | emp_siu==5 | emp_siu==7) 
-replace ocupinf = . if ocupres==0
+gen ocupinfp =  .
+replace ocupinfp = (emp_siu==1 | emp_siu==3 | emp_siu==5 | emp_siu==7) 
+replace ocupinfp = . if ocupres==0
+label variable ocupinfp "Condicion de empleo-replica"
+label define ocupinfp 0 "empleo_formal" 1 "empleo_informal"
+* o es empleo formal y 1 empleo informal
 drop ocupres
-
-tab p507 ocupinf
-
-
+cd $output
+save "basefinal-`year'.dta", replace
+*tablas para cada año
+tabout ocupinf ocupinfp p507 using tabresumen_`year'.xls, h3(nil) 
