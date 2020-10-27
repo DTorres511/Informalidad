@@ -1,4 +1,3 @@
-*Armando la data por módulos
 clear all
 set more off
 
@@ -42,7 +41,8 @@ destring hogar, replace
 destring codperso, replace
 save "mod4001-`year'.dta", replace
 
-*aqui debemos cambiar la variable p510 a por p510 a partir del año 2012 y la alternativa a tomar es la 3
+*aqui debemos cambiar la variable p510a  por p510a1 a partir del año 2012 y la alternativa a tomar es la 3
+*considerar la variable ocupinf a partir del 2007
 use conglome vivienda hogar codperso fac500a i513t i518 i524d1 i530a i538d1 i541a ocu500 p505 p506 p507 p510 p510a p510b ///
 p512a p512b ocupinf using "enaho01a-`year'-500.dta", clear
 rename i524d1 i524e1
@@ -183,6 +183,7 @@ replace ocupinfp1 = 1 if (emp_siu==1 | emp_siu==3 | emp_siu==5 | emp_siu==7) & o
 replace ocupinf=0 if ocupinf==2
 pwcorr ocupinfp ocupinf
 *-----------------------
+
 
 
 
